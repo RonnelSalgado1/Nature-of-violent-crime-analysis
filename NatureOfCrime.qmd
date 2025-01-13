@@ -5,14 +5,14 @@ format: html
 editor: visual
 ---
 
-## Load tidyverse
+## 1) Load tidyverse
 
 ```{r}
 #Load tidyverse
 library(tidyverse)
 ```
 
-## Read data-sets into tibble
+## 2) Read data-sets into tibble
 
 ```{r}
 #read all violent crime csv file into tibble 
@@ -29,7 +29,7 @@ noInjuryDataet <-  read_csv("natureofcrimeviolenceyemar2023(Table_1e).csv")
 
 ```
 
-## Tidying all violent crime Data
+## 3) Tidying all violent crime Data
 
 ```{r}
 #removing and renaming rows/columns
@@ -62,7 +62,7 @@ allCrimeTib <- allCrimeDataset %>%
 
 ## 
 
-## Tidying violent crime with injury
+## 4) Tidying violent crime with injury
 
 ```{r}
 #removing and renaming rows/columns
@@ -93,7 +93,7 @@ injuryTib <- injuryDataet %>%
          Percentage = as.numeric(Percentage)) #turn percentages as numbers
 ```
 
-## Tidying violent crime with no injury
+## 5) Tidying violent crime with no injury
 
 ```{r}
 #removing and renaming rows/columns
@@ -124,29 +124,7 @@ noInjuryTib <- noInjuryDataet %>%
          Percentage = as.numeric(Percentage)) #turn percentages as numbers
 ```
 
-## Shannon Entropy of all crime types
-
-```{r}
-totalPercentage <- sum(allCrimeTibLong$Percentage)
-entropyAllCrime <- allCrimeTibLong %>%
-  #find probability for each timing
-  group_by(Timing) %>%
-  mutate(probability = Percentage / totalPercentage) %>%
-  ungroup()
-
-
-entropy <- entropyAllCrime %>%
-  #find entropy for each timing
-  group_by(Timing) %>%
-  summarise(entropy = -sum(probability * log2(probability))) %>%
-  ungroup()
-  
-  #sum(entropyAllCrime$probability * log2(1/entropyAllCrime$probability))
-
-entropy
-```
-
-## Linear regression model for all violent crimes
+## 6) Linear regression model for all violent crimes
 
 ```{r}
 
@@ -160,7 +138,7 @@ summary(modelAllCrime)
 #morning as reference: tib$Timing <- relevel(tib$timing, ref = "Morning")
 ```
 
-## Linear regression model of crimes with injury
+## 7) Linear regression model of crimes with injury
 
 ```{r}
 #linear regression model
@@ -170,7 +148,7 @@ modelWithInjury <- lm(Percentage ~ Timing, data = injuryTibLong)
 summary(modelWithInjury) 
 ```
 
-## Linear regression model of crimes with no injury
+## 8) Linear regression model of crimes with no injury
 
 ```{r}
 #linear regression model
@@ -180,7 +158,7 @@ modelNoInjury <- lm(Percentage ~ Timing, data = noInjuryTibLong)
 summary(modelNoInjury) 
 ```
 
-## Plot linear regression model for all violent crimes
+## 9) Plot linear regression model for all violent crimes
 
 ```{r}
 #plot linear model
@@ -198,7 +176,7 @@ ggplot(allCrimeTibLong, aes(x = Year, y = Percentage, color = Timing)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Plot linear regression model for crimes with injury
+## 10) Plot linear regression model for crimes with injury
 
 ```{r}
 #plot linear model
@@ -216,7 +194,7 @@ ggplot(injuryTibLong, aes(x = Year, y = Percentage, color = Timing)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Plot linear regression model for crimes with no injury
+## 11) Plot linear regression model for crimes with no injury
 
 ```{r}
 #plot linear model
@@ -234,7 +212,7 @@ ggplot(noInjuryTibLong, aes(x = Year, y = Percentage, color = Timing)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-## Weekdays vs Weekend Tidy
+## 12) Weekdays vs Weekend Tidy
 
 ```{r}
 #removing and renaming rows/columns
@@ -265,7 +243,7 @@ weekdayWeekend <- allCrimeDataset %>%
          Percentage = as.numeric(Percentage)) #turn percentages as numbers
 ```
 
-## Weekday vs Weekend t-test
+## 13) Weekday vs Weekend t-test
 
 ```{r}
 ttestWeekendvsWeekday <- t.test(Percentage ~ Timing, data = weekdayWeekendLong, var.equal = TRUE)
@@ -273,7 +251,7 @@ ttestWeekendvsWeekday <- t.test(Percentage ~ Timing, data = weekdayWeekendLong, 
 print(ttestWeekendvsWeekday)
 ```
 
-## Weekday vs Weekend Linear Regression Model
+## 14) Weekday vs Weekend Linear Regression Model
 
 ```{r}
 
@@ -287,7 +265,7 @@ summary(modelWeekdayWeekend)
 #morning as reference: tib$Timing <- relevel(tib$timing, ref = "Morning")
 ```
 
-## Plot weekday vs weekend linear regression model
+## 15) Plot weekday vs weekend linear regression model
 
 ```{r}
 #plot linear model
