@@ -1,0 +1,306 @@
+---
+title: "NatureOfCrime"
+author: "Ronnel Salgado"
+format: html
+editor: visual
+---
+
+## Load tidyverse
+
+```{r}
+#Load tidyverse
+library(tidyverse)
+```
+
+## Read data-sets into tibble
+
+```{r}
+#read all violent crime csv file into tibble 
+allCrimeDataset <- read_csv("natureofcrimeviolenceyemar2023- Table_1a.csv")
+#read crime resulting in injury csv file into tibble 
+injuryDataet <-  read_csv("natureofcrimeviolenceyemar2023(Table_1b).csv")
+#read crime resulting in no injury csv file into tibble 
+noInjuryDataet <-  read_csv("natureofcrimeviolenceyemar2023(Table_1e).csv")
+
+
+
+#to remove all variables rm(list = ls())
+
+
+```
+
+## Tidying all violent crime Data
+
+```{r}
+#removing and renaming rows/columns
+allCrimeTib <- allCrimeDataset %>%
+  slice(-c(1:8)) %>%
+  select(-c(11:12))  %>%
+  slice(-c(1, 2, 3, 4, 7, 8, 10, 11, 13, 14, 15, 16, 17, 18 )) %>%
+  rename(Timing = 1,
+  Apr2012toMar2013 = 2,
+  Apr2013toMar2014 = 3,
+  Apr2014toMar2015 = 4,
+  Apr2015toMar2016 = 5,
+  Apr2016toMar2017 = 6,
+  Apr2017toMar2018 = 7,
+  Apr2018toMar2019 = 8,
+  Apr2019toMar2020 = 9,
+  Apr2022toMar2023 = 10
+  ) 
+  
+  #format into long format
+  allCrimeTibLong <- allCrimeTib %>%  pivot_longer (
+    cols = starts_with("Apr"),
+    names_to = "Year",
+    values_to = "Percentage"
+  )%>%
+  mutate(Year = factor(Year), #factorise Year
+         Timing = factor(Timing), #factorise Timing
+         Percentage = as.numeric(Percentage)) #turn percentages as numbers
+```
+
+## 
+
+## Tidying violent crime with injury
+
+```{r}
+#removing and renaming rows/columns
+injuryTib <- injuryDataet %>%
+  slice(-c(1:8)) %>%
+  select(-c(11:12))  %>%
+  slice(-c(1, 2, 3, 4, 7, 8, 10, 11, 13, 14, 15, 16, 17, 18 )) %>%
+  rename(Timing = 1,
+  Apr2012toMar2013 = 2,
+  Apr2013toMar2014 = 3,
+  Apr2014toMar2015 = 4,
+  Apr2015toMar2016 = 5,
+  Apr2016toMar2017 = 6,
+  Apr2017toMar2018 = 7,
+  Apr2018toMar2019 = 8,
+  Apr2019toMar2020 = 9,
+  Apr2022toMar2023 = 10
+  ) 
+  
+  #format into long format
+  injuryTibLong <- injuryTib %>%  pivot_longer (
+    cols = starts_with("Apr"),
+    names_to = "Year",
+    values_to = "Percentage"
+  )%>%
+  mutate(Year = factor(Year), #factorise Year
+         Timing = factor(Timing), #factorise Timing
+         Percentage = as.numeric(Percentage)) #turn percentages as numbers
+```
+
+## Tidying violent crime with no injury
+
+```{r}
+#removing and renaming rows/columns
+noInjuryTib <- noInjuryDataet %>%
+  slice(-c(1:8)) %>%
+  select(-c(11:12))  %>%
+  slice(-c(1, 2, 3, 4, 7, 8, 10, 11, 13, 14, 15, 16, 17, 18 )) %>%
+  rename(Timing = 1,
+  Apr2012toMar2013 = 2,
+  Apr2013toMar2014 = 3,
+  Apr2014toMar2015 = 4,
+  Apr2015toMar2016 = 5,
+  Apr2016toMar2017 = 6,
+  Apr2017toMar2018 = 7,
+  Apr2018toMar2019 = 8,
+  Apr2019toMar2020 = 9,
+  Apr2022toMar2023 = 10
+  ) 
+  
+  #format into long format
+  noInjuryTibLong <- noInjuryTib %>%  pivot_longer (
+    cols = starts_with("Apr"),
+    names_to = "Year",
+    values_to = "Percentage"
+  )%>%
+  mutate(Year = factor(Year), #factorise Year
+         Timing = factor(Timing), #factorise Timing
+         Percentage = as.numeric(Percentage)) #turn percentages as numbers
+```
+
+## Shannon Entropy of all crime types
+
+```{r}
+totalPercentage <- sum(allCrimeTibLong$Percentage)
+entropyAllCrime <- allCrimeTibLong %>%
+  #find probability for each timing
+  group_by(Timing) %>%
+  mutate(probability = Percentage / totalPercentage) %>%
+  ungroup()
+
+
+entropy <- entropyAllCrime %>%
+  #find entropy for each timing
+  group_by(Timing) %>%
+  summarise(entropy = -sum(probability * log2(probability))) %>%
+  ungroup()
+  
+  #sum(entropyAllCrime$probability * log2(1/entropyAllCrime$probability))
+
+entropy
+```
+
+## Linear regression model for all violent crimes
+
+```{r}
+
+#linear regression model
+modelAllCrime <- lm(Percentage ~ Timing, data = allCrimeTibLong) 
+
+#display linear model
+summary(modelAllCrime) 
+
+#weekend as reference: tib$Timing <- relevel(tib$timing, ref = "During the week")
+#morning as reference: tib$Timing <- relevel(tib$timing, ref = "Morning")
+```
+
+## Linear regression model of crimes with injury
+
+```{r}
+#linear regression model
+modelWithInjury <- lm(Percentage ~ Timing, data = injuryTibLong) 
+
+#display linear model
+summary(modelWithInjury) 
+```
+
+## Linear regression model of crimes with no injury
+
+```{r}
+#linear regression model
+modelNoInjury <- lm(Percentage ~ Timing, data = noInjuryTibLong) 
+
+#display linear model
+summary(modelNoInjury) 
+```
+
+## Plot linear regression model for all violent crimes
+
+```{r}
+#plot linear model
+ggplot(allCrimeTibLong, aes(x = Year, y = Percentage, color = Timing)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, aes(group = Timing), linetype = "solid") +
+  labs(
+    title = "Linear Regression of all violent crime percentages occured by Year and Timing",
+    x = "Year",
+    y = "Percentage of Violent Crimes",
+    color = "Time of Day"
+    
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Plot linear regression model for crimes with injury
+
+```{r}
+#plot linear model
+ggplot(injuryTibLong, aes(x = Year, y = Percentage, color = Timing)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, aes(group = Timing), linetype = "solid") +
+  labs(
+    title = "Linear Regression of violent crime percentages occured by Year and Timing",
+    x = "Year",
+    y = "Percentage of Violent Crimes",
+    color = "Time of Day"
+    
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Plot linear regression model for crimes with no injury
+
+```{r}
+#plot linear model
+ggplot(noInjuryTibLong, aes(x = Year, y = Percentage, color = Timing)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, aes(group = Timing), linetype = "solid") +
+  labs(
+    title = "Linear Regression of violent crime percentages occured by Year and Timing",
+    x = "Year",
+    y = "Percentage of Violent Crimes",
+    color = "Time of Day"
+    
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Weekdays vs Weekend Tidy
+
+```{r}
+#removing and renaming rows/columns
+weekdayWeekend <- allCrimeDataset %>%
+  slice(-c(1:8)) %>%
+  select(-c(11:12))  %>%
+  slice(-c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 )) %>%
+  rename(Timing = 1,
+  Apr2012toMar2013 = 2,
+  Apr2013toMar2014 = 3,
+  Apr2014toMar2015 = 4,
+  Apr2015toMar2016 = 5,
+  Apr2016toMar2017 = 6,
+  Apr2017toMar2018 = 7,
+  Apr2018toMar2019 = 8,
+  Apr2019toMar2020 = 9,
+  Apr2022toMar2023 = 10
+  ) 
+  
+  #format into long format
+  weekdayWeekendLong <- weekdayWeekend %>%  pivot_longer (
+    cols = starts_with("Apr"),
+    names_to = "Year",
+    values_to = "Percentage"
+  )%>%
+  mutate(Year = factor(Year), #factorise Year
+         Timing = factor(Timing, levels = c("During the week", "At the weekend[note 5]")), #factorise Timing and reorder level
+         Percentage = as.numeric(Percentage)) #turn percentages as numbers
+```
+
+## Weekday vs Weekend t-test
+
+```{r}
+ttestWeekendvsWeekday <- t.test(Percentage ~ Timing, data = weekdayWeekendLong, var.equal = TRUE)
+
+print(ttestWeekendvsWeekday)
+```
+
+## Weekday vs Weekend Linear Regression Model
+
+```{r}
+
+#linear regression model
+modelWeekdayWeekend <- lm(Percentage ~ Year + Timing, data = weekdayWeekendLong) 
+
+#display linear model
+summary(modelWeekdayWeekend) 
+
+#weekend as reference: tib$Timing <- relevel(tib$timing, ref = "During the week")
+#morning as reference: tib$Timing <- relevel(tib$timing, ref = "Morning")
+```
+
+## Plot weekday vs weekend linear regression model
+
+```{r}
+#plot linear model
+ggplot(weekdayWeekendLong, aes(x = Year, y = Percentage, color = Timing)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE, aes(group = Timing), linetype = "solid") +
+  labs(
+    title = "Linear Regression of all violent crime percentages occured by Year and Timing",
+    x = "Year",
+    y = "Percentage of Violent Crimes",
+    color = "Time of Day"
+    
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
